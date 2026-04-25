@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from config import Config
+from routes.ai_routes import ai_bp
 
 # ✅ CREATE APP FIRST
 app = Flask(__name__)
@@ -86,6 +87,7 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(classroom_bp, url_prefix='/classroom')
 app.register_blueprint(schedule_bp, url_prefix='/schedule')
 app.register_blueprint(availability_bp, url_prefix='/availability')
+app.register_blueprint(ai_bp, url_prefix='/ai')
 
 
 # ✅ DEFAULT ROUTE
