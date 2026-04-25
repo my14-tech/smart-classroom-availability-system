@@ -1,30 +1,55 @@
-# backend/utils/recommendation_engine.py
+from utils.db import get_db_connection
 
-def suggest_best_room(rooms, schedules, required_capacity, date, start_time, end_time):
-    available_rooms = []
+def suggest_best_room(date, start_time, end_time):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Get all rooms
+    cursor.execute("SELECT * FROM classrooms")
+    rooms = cursor.fetchall()
+
+    # Get all schedules for that date
+    cursor.execute("SELECT * FROM schedules WHERE date = ?", (date,))
+    schedules = cursor.fetchall()
+
+    best_room = None
+    best_score = -1
 
     for room in rooms:
         room_id = room["id"]
-        capacity = room.get("capacity", 0)
 
-        # skip if capacity not enough
-        if capacity < required_capacity:
-            continue
-
-        is_available = True
+        conflict = False
+        usage_count = 0
 
         for s in schedules:
-            if s["room_id"] == room_id and s["date"] == date:
-                # check time conflict
+            if s["room_id"] == room_id:
+                usage_count += 1
+
+                # Check overlap
                 if not (end_time <= s["start_time"] or start_time >= s["end_time"]):
-                    is_available = False
+                    conflict = True
                     break
 
-        if is_available:
-            available_rooms.append(room)
+        if conflict:
+            continue
 
-    # simple logic: return smallest suitable room
-    if available_rooms:
-        return sorted(available_rooms, key=lambda x: x["capacity"])[0]
+        # 🎯 SCORING LOGIC
+        score = 100 - (usage_count * 10)
 
-    return None
+        # Prefer less used rooms
+        if score > best_score:
+            best_score = score
+            best_room = room
+
+    conn.close()
+
+    if best_room:
+        return {
+            "room_number": best_room["room_number"],
+            "message": "Best available room found",
+            "reason": "Least used room with no schedule conflicts"
+        }
+    else:
+        return {
+            "message": "No rooms available"
+        }

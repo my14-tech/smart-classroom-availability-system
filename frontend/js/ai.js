@@ -29,12 +29,15 @@ function getSuggestion() {
         const result = document.getElementById("result");
 
         if (data.status === "success") {
-            result.innerText = `Suggested Room: ${data.room.room_number}`;
-            result.style.color = "green";
-        } else {
-            result.innerText = data.message;
-            result.style.color = "red";
-        }
+    result.innerHTML = `
+        <h3>✅ Suggested Room: ${data.room.room_number}</h3>
+        <p>💡 Reason: ${data.room.reason}</p>
+    `;
+    result.style.color = "green";
+} else {
+    result.innerText = data.message;
+    result.style.color = "red";
+}
     })
     .catch(err => {
         console.error(err);
