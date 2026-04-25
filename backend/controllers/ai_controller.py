@@ -9,7 +9,8 @@ def get_room_suggestion(data):
         result = suggest_best_room(
             data["date"],
             data["start_time"],
-            data["end_time"]
+            data["end_time"],
+            int(data["capacity"])
         )
 
         if "room_number" in result:
